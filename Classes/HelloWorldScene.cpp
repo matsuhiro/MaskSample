@@ -1,4 +1,5 @@
 #include "HelloWorldScene.h"
+#include "CCMask.h"
 
 USING_NS_CC;
 
@@ -15,6 +16,22 @@ Scene* HelloWorld::createScene()
 
     // return the scene
     return scene;
+}
+
+CCMask* createMasked(Sprite* mask, Color3B color) {
+    auto size = mask->getContentSize();
+    RenderTexture* pRenderTexture = RenderTexture::create(size.width, size.height);
+    auto r = color.r / 255.0f;
+    auto g = color.g / 255.0f;
+    auto b = color.b / 255.0f;
+    pRenderTexture->beginWithClear(r, g, b, 1);
+    pRenderTexture->end();
+    
+    auto sprite = Sprite::createWithTexture(pRenderTexture->getSprite()->getTexture());
+    sprite->setPosition(Point(mask->getContentSize().width/2, mask->getContentSize().height/2));
+    
+    CCMask* masked = CCMask::create(mask , sprite);
+    return masked;
 }
 
 // on "init" you need to initialize your instance
@@ -63,15 +80,18 @@ bool HelloWorld::init()
     // add the label as a child to this layer
     this->addChild(label, 1);
 
-    // add "HelloWorld" splash screen"
-    auto sprite = Sprite::create("HelloWorld.png");
-
-    // position the sprite on the center of the screen
-    sprite->setPosition(Point(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
-
-    // add the sprite as a child to this layer
+    auto center = Point(origin.x + visibleSize.width / 2, origin.y + visibleSize.height /2);
+    
+    auto sprite = Sprite::create("mask.png");
+    sprite->setAnchorPoint(Point(0.5, 0.5));
+    sprite->setPosition(center + Point(-200, 0));
     this->addChild(sprite, 0);
     
+    auto masked = createMasked(sprite, Color3B(100, 255, 255));
+    masked->setAnchorPoint(Point(0.5, 0.5));
+    masked->setPosition(center + Point(200, 0));
+    this->addChild(masked, 1);
+  
     return true;
 }
 
